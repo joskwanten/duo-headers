@@ -1,28 +1,51 @@
-# Publiceren in de Chrome Web Store
+# Publiceren in de Chrome Web Store (Unlisted)
 
-## Eenmalig
+Met *Unlisted* is de extensie alleen te vinden via de directe link. Collega's installeren met één klik
+en krijgen updates automatisch (Chrome controleert dat zelf, meestal binnen enkele uren).
 
-1. Ontwikkelaarsaccount aanmaken op https://chrome.google.com/webstore/devconsole (eenmalig $5).
-   Gebruik bij voorkeur een groeps-/teamaccount, zodat publiceren niet aan één persoon hangt.
-2. De privacyverklaring ([PRIVACY.md](PRIVACY.md)) ergens publiek bereikbaar zetten (bv. via GitHub Pages
-   of de raw-URL in een publieke repo); de store vraagt om een URL.
+## Eenmalig: account
 
-## Per release
+1. Ga naar https://chrome.google.com/webstore/devconsole en log in met een Google-account.
+   Gebruik bij voorkeur een team-/groepsaccount (of voeg later collega's toe via een *group publisher*),
+   zodat publiceren niet aan één persoon hangt.
+2. Betaal de eenmalige registratie ($5) en bevestig je e-mailadres.
+3. Vul onder **Account** een contact-e-mailadres in (verplicht om te kunnen publiceren).
 
-1. `scripts/package.sh 1.2.0` (versie moet hoger zijn dan de vorige upload)
-2. In de developer console: item openen → **Package** → nieuwe zip uploaden → **Submit for review**.
+## Eerste publicatie
 
-## Invullen bij de eerste upload
+1. Maak een release in GitHub met tag `v1.0.0` (**Releases → Draft a new release**).
+   De workflow *Release* hangt automatisch `duo-headers-1.0.0.zip` aan de release.
+   Lokaal kan ook: `scripts/package.sh 1.0.0`.
+2. In de developer console: **New item** → upload de zip.
+3. Vul de tabbladen in met de teksten hieronder en klik op **Submit for review**.
 
-**Zichtbaarheid**: *Unlisted* (alleen via de link vindbaar) of *Private* (alleen voor een Google Workspace-domein).
+### Tabblad *Store listing*
 
-**Korte beschrijving**: Zet request headers per profiel op gekoppelde domeinen, inclusief tokens van een token service.
+| Veld | Invullen |
+|---|---|
+| Beschrijving | zie hieronder |
+| Categorie | Developer Tools |
+| Taal | Nederlands |
+| Store-icoon (128×128) | `src/icons/icon-128.png` |
+| Schermafbeeldingen (1280×800) | `docs/store/screenshot-1-profielen.png`, `screenshot-2-toast.png`, `screenshot-3-popup.png` |
 
-**Categorie**: Developer Tools
+**Beschrijving**:
+
+> Duo Headers zet HTTP-request headers op de domeinen die jij kiest, gegroepeerd in profielen.
+>
+> • Maak profielen met een naam, gekoppelde domeinen (inclusief subdomeinen) en headers (zetten of verwijderen)
+> • Zet profielen met één klik aan of uit via de knop in de werkbalk
+> • Optioneel per profiel: haal een token op bij een token service en stuur het mee als header; het token wordt automatisch vernieuwd voor het verloopt
+> • Een melding op de pagina laat zien welke profielen en headers zijn toegepast
+> • Importeer en exporteer profielen als JSON om ze met je team te delen
+>
+> Alle instellingen blijven lokaal in je browser. De extensie verstuurt geen gegevens naar derden.
+
+### Tabblad *Privacy practices*
 
 **Single purpose**: Request headers toevoegen of verwijderen op door de gebruiker gekozen domeinen, gegroepeerd in profielen.
 
-**Verantwoording per permissie** (wordt gevraagd onder *Privacy practices*):
+**Verantwoording per permissie**:
 
 | Permissie | Verantwoording |
 |---|---|
@@ -33,9 +56,32 @@
 | Host permissions `<all_urls>` | De gebruiker kiest zelf de domeinen (inclusief interne/test-domeinen en localhost); die zijn vooraf niet bekend. Nodig om headers op die domeinen te zetten en om de token service op een zelf ingestelde URL aan te roepen. |
 | Content script op alle sites | Tonen van de melding (toast) op de pagina wanneer een profiel is toegepast. Het script leest geen paginagegevens. |
 
-**Data usage**: geen van de categorieën wordt verzameld of verstuurd (zie privacyverklaring). Vink de drie verklaringen aan
+**Remote code**: Nee, ik gebruik geen remote code.
+
+**Data usage**: vink geen datacategorieën aan, en vink de drie verklaringen aan
 (niet verkopen, niet gebruiken voor ongerelateerde doeleinden, niet voor kredietwaardigheid).
 
-**Remote code**: Nee.
+**Privacy policy URL**: de tekst van [PRIVACY.md](PRIVACY.md) moet op een publiek bereikbare URL staan.
+Omdat deze repo privé is, werkt een GitHub-link niet. Mogelijkheden: een pagina op een publieke (team)site,
+een publieke GitHub Gist, of GitHub Pages vanuit een aparte publieke repo.
 
-Let op: door `<all_urls>` en `webRequest` kan de review wat langer duren (enkele dagen) dan bij een extensie met beperkte rechten.
+### Tabblad *Distribution*
+
+- **Visibility**: *Unlisted*
+- **Regions**: Nederland (of alle regio's)
+
+De review duurt bij een nieuwe extensie met brede rechten (`<all_urls>`, `webRequest`) meestal enkele dagen.
+Na goedkeuring staat de installatielink bovenaan het item in de developer console; deel die met je team.
+
+## Nieuwe versie uitbrengen
+
+1. Maak een GitHub-release met een hogere versie, bv. `v1.1.0` (de store weigert een gelijke of lagere versie).
+2. Download de zip uit de release.
+3. Developer console → item → **Package** → **Upload new package** → **Submit for review**.
+
+Updates gaan meestal sneller door de review dan de eerste versie. Wijzigen de permissies in het manifest,
+dan zet Chrome de extensie bij gebruikers uit tot ze de nieuwe rechten accepteren; vermijd dat waar mogelijk.
+
+## Schermafbeeldingen bijwerken
+
+Na UI-wijzigingen: `node scripts/store-screenshots.js` (vereist Node + Playwright met Chromium).

@@ -1,0 +1,36 @@
+# Bouwt de extensie-zip bij een nieuwe GitHub-release en hangt die aan de release.
+# Maak een release met een tag als v1.2.0; de versie in het manifest wordt daarop gezet.
+# De zip upload je daarna in de Chrome Web Store developer console.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versie uit tag halen
+        id: version
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          if ! [[ "$version" =~ ^[0-9]+(\.[0-9]+){0,3}$ ]]; then
+            echo "Tag '$tag' is geen geldige versie (verwacht bv. v1.2.0)" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Zip maken
+        run: scripts/package.sh "${{ steps.version.outputs.version }}"
+
+      - name: Zip aan release hangen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "dist/duo-headers-${{ steps.version.outputs.version }}.zip" --clobber

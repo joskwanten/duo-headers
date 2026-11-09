@@ -12,6 +12,9 @@ Een profiel heeft een naam, een lijst domeinen en een lijst headers, en kan aan/
 
 ## Release maken
 
+Maak in GitHub een release met een tag als `v1.0.0`: de workflow *Release* bouwt de zip en hangt die aan de release.
+Lokaal kan ook:
+
 ```bash
 scripts/package.sh 1.0.0   # zet versie in manifest en maakt dist/duo-headers-1.0.0.zip
 ```
