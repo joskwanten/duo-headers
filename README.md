@@ -14,7 +14,7 @@ Een profiel heeft een naam, een lijst domeinen en een lijst headers, en kan aan/
 
 - **Popup** (klik op het extensie-icoon): profielen snel aan/uit zetten. De badge toont het aantal actieve profielen.
 - **Opties-pagina** ("Profielen beheren"): profielen aanmaken, hernoemen, domeinen en headers instellen,
-  volgorde wijzigen, en importeren/exporteren als JSON (handig om profielen met het team te delen).
+  volgorde wijzigen, in-/uitklappen (status blijft bewaard), en importeren/exporteren als JSON (handig om profielen met het team te delen).
 
 Domeinen worden gematcht via `requestDomains`: `example.com` matcht ook alle subdomeinen.
 `*.example.com`, `https://` en paden worden automatisch weggestript.

@@ -15,3 +15,8 @@ input[type="text"], textarea, select { font: inherit; padding: 4px 6px; box-sizi
 .popup { width: 260px; }
 .popup .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #8883; }
 .popup .row span { flex: 1; }
+.profile .toggle { width: 28px; padding: 4px 0; }
+.profile .summary { display: none; margin-left: 36px; }
+.profile.collapsed .summary { display: block; }
+.profile.collapsed .body { display: none; }
+.profile.collapsed header { margin-bottom: 4px; }

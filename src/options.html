@@ -10,6 +10,8 @@
   <p class="muted">Domeinen: één per regel. Subdomeinen worden automatisch meegenomen
     (<code>example.com</code> matcht ook <code>api.example.com</code>).
     Bovenste profiel wint bij conflicterende headers.</p>
+  <p><button id="collapse-all">Alles inklappen</button>
+    <button id="expand-all">Alles uitklappen</button></p>
   <div id="profiles"></div>
   <button id="add">+ Profiel toevoegen</button>
   <button id="export">Exporteren</button>
@@ -19,17 +21,21 @@
   <template id="profile-tpl">
     <section class="profile">
       <header>
+        <button class="toggle" title="In-/uitklappen">▾</button>
         <input type="checkbox" class="enabled" title="Actief">
         <input type="text" class="name" placeholder="Profielnaam">
         <button class="up" title="Omhoog">↑</button>
         <button class="down" title="Omlaag">↓</button>
         <button class="delete">Verwijderen</button>
       </header>
+      <div class="summary muted"></div>
+      <div class="body">
       <label class="block">Domeinen</label>
       <textarea class="domains" placeholder="example.com&#10;test.local"></textarea>
       <label class="block">Headers</label>
       <div class="headers"></div>
       <button class="add-header">+ Header</button>
+      </div>
     </section>
   </template>
 

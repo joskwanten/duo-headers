@@ -7,6 +7,22 @@ const headerTpl = document.getElementById("header-tpl");
 let profiles = [];
 let saveTimer;
 
+// Inklap-status is puur weergave: apart bewaard (niet in de profielen),
+// zodat in-/uitklappen geen nieuwe header-regels laat opbouwen.
+const COLLAPSED_KEY = "collapsedProfiles";
+let collapsed = new Set();
+
+function saveCollapsed() {
+  chrome.storage.local.set({ [COLLAPSED_KEY]: [...collapsed] });
+}
+
+function summarize(profile) {
+  const d = profile.domains.length;
+  const h = profile.headers.filter((x) => x.name.trim()).length;
+  const domains = d ? profile.domains.slice(0, 3).join(", ") + (d > 3 ? ` +${d - 3}` : "") : "geen domeinen";
+  return `${domains} · ${h} header${h === 1 ? "" : "s"}`;
+}
+
 function scheduleSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => saveProfiles(profiles), 300);
@@ -45,6 +61,21 @@ function renderProfile(profile, index) {
   const domains = el.querySelector(".domains");
   const headers = el.querySelector(".headers");
 
+  const toggle = el.querySelector(".toggle");
+  const summary = el.querySelector(".summary");
+  const applyCollapsed = () => {
+    const isCollapsed = collapsed.has(profile.id);
+    el.classList.toggle("collapsed", isCollapsed);
+    toggle.textContent = isCollapsed ? "▸" : "▾";
+    summary.textContent = summarize(profile);
+  };
+  applyCollapsed();
+  toggle.onclick = () => {
+    collapsed.has(profile.id) ? collapsed.delete(profile.id) : collapsed.add(profile.id);
+    saveCollapsed();
+    applyCollapsed();
+  };
+
   enabled.checked = profile.enabled;
   name.value = profile.name;
   domains.value = profile.domains.join("\n");
@@ -57,7 +88,7 @@ function renderProfile(profile, index) {
   };
 
   el.querySelector(".delete").onclick = () => {
-    if (confirm(`Profiel "${profile.name}" verwijderen?`)) { profiles.splice(index, 1); commit(); }
+    if (confirm(`Profiel "${profile.name}" verwijderen?`)) { collapsed.delete(profile.id); saveCollapsed(); profiles.splice(index, 1); commit(); }
   };
   el.querySelector(".up").onclick = () => move(index, -1);
   el.querySelector(".down").onclick = () => move(index, 1);
@@ -81,6 +112,13 @@ function render() {
   container.replaceChildren();
   profiles.forEach(renderProfile);
 }
+
+document.getElementById("collapse-all").onclick = () => {
+  collapsed = new Set(profiles.map((p) => p.id)); saveCollapsed(); render();
+};
+document.getElementById("expand-all").onclick = () => {
+  collapsed.clear(); saveCollapsed(); render();
+};
 
 document.getElementById("add").onclick = () => { profiles.push(newProfile()); commit(); };
 
@@ -118,4 +156,5 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 profiles = await getProfiles();
+collapsed = new Set((await chrome.storage.local.get(COLLAPSED_KEY))[COLLAPSED_KEY] ?? []);
 render();
