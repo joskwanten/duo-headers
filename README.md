@@ -10,6 +10,16 @@ Een profiel heeft een naam, een lijst domeinen en een lijst headers, en kan aan/
 3. Klik **Load unpacked** en kies de map `src/`
 4. Na code-wijzigingen: klik op het herlaad-icoon bij de extensie
 
+## Release maken
+
+```bash
+scripts/package.sh 1.0.0   # zet versie in manifest en maakt dist/duo-headers-1.0.0.zip
+```
+
+Die zip upload je in de Chrome Web Store, zie [docs/chrome-web-store.md](docs/chrome-web-store.md)
+(inclusief de teksten en permissie-verantwoording die de store vraagt) en [docs/PRIVACY.md](docs/PRIVACY.md).
+Iconen opnieuw genereren: `python3 scripts/make-icons.py`.
+
 ## Gebruik
 
 - **Popup** (klik op het extensie-icoon): profielen snel aan/uit zetten. De badge toont het aantal actieve profielen.
