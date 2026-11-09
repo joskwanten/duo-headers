@@ -13,9 +13,9 @@ en krijgen updates automatisch (Chrome controleert dat zelf, meestal binnen enke
 
 ## Eerste publicatie
 
-1. Maak een release in GitHub met tag `v1.0.0` (**Releases → Draft a new release**).
-   De workflow *Release* hangt automatisch `duo-headers-1.0.0.zip` aan de release.
-   Lokaal kan ook: `scripts/package.sh 1.0.0`.
+1. Ga in GitHub naar **Actions → Release → Run workflow**, vul versie `1.0.0` in en start.
+   De pipeline maakt de tag `v1.0.0`, een release en `duo-headers-1.0.0.zip` (te downloaden bij de release
+   of onderaan de workflow-run). Lokaal kan ook: `scripts/package.sh 1.0.0`.
 2. In de developer console: **New item** → upload de zip.
 3. Vul de tabbladen in met de teksten hieronder en klik op **Submit for review**.
 
@@ -75,9 +75,9 @@ Na goedkeuring staat de installatielink bovenaan het item in de developer consol
 
 ## Nieuwe versie uitbrengen
 
-1. Maak een GitHub-release met een hogere versie, bv. `v1.1.0` (de store weigert een gelijke of lagere versie).
-2. Download de zip uit de release.
-3. Developer console → item → **Package** → **Upload new package** → **Submit for review**.
+1. **Actions → Release → Run workflow** met een hogere versie, bv. `1.1.0` (de store weigert een gelijke of lagere versie).
+2. Zijn de store-secrets ingesteld (zie hieronder), dan is de nieuwe versie daarmee al geüpload en ingediend.
+   Anders: download de zip uit de release → developer console → item → **Package** → **Upload new package** → **Submit for review**.
 
 Updates gaan meestal sneller door de review dan de eerste versie. Wijzigen de permissies in het manifest,
 dan zet Chrome de extensie bij gebruikers uit tot ze de nieuwe rechten accepteren; vermijd dat waar mogelijk.

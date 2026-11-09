@@ -12,7 +12,8 @@ Een profiel heeft een naam, een lijst domeinen en een lijst headers, en kan aan/
 
 ## Release maken
 
-Maak in GitHub een release met een tag als `v1.0.0`: de workflow *Release* bouwt de zip en hangt die aan de release.
+Ga in GitHub naar **Actions → Release → Run workflow** en vul een versie in (bv. `1.0.0`): de pipeline maakt de tag,
+de release en de zip. (Zelf een release maken met een tag als `v1.0.0` werkt ook.)
 Lokaal kan ook:
 
 ```bash

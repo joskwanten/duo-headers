@@ -1,11 +1,21 @@
-# Bouwt de extensie-zip bij een nieuwe GitHub-release en hangt die aan de release.
-# Maak een release met een tag als v1.2.0; de versie in het manifest wordt daarop gezet.
+# Bouwt de extensie-zip en maakt een GitHub-release. Twee manieren om te starten:
+#
+#  1. Actions → Release → "Run workflow" en vul een versie in (bv. 1.2.0).
+#     De pipeline maakt dan zelf de tag v1.2.0 en de release, met de zip eraan.
+#  2. Zelf een release maken in GitHub met een tag als v1.2.0; de zip wordt eraan gehangen.
+#
+# De versie in het manifest wordt op de opgegeven versie gezet (moet hoger zijn dan de vorige in de store).
 # Zijn de secrets CWS_SERVICE_ACCOUNT_JSON, CWS_PUBLISHER_ID en CWS_EXTENSION_ID ingesteld,
 # dan wordt de zip ook naar de Chrome Web Store geüpload en ingediend voor review.
 # Zonder die secrets upload je de zip handmatig in de developer console.
 name: Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versie (bv. 1.2.0)"
+        required: true
   release:
     types: [published]
 
@@ -22,25 +32,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Versie uit tag halen
+      - name: Versie bepalen
         id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          tag="${GITHUB_REF_NAME}"
-          version="${tag#v}"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            version="${INPUT_VERSION#v}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
           if ! [[ "$version" =~ ^[0-9]+(\.[0-9]+){0,3}$ ]]; then
-            echo "Tag '$tag' is geen geldige versie (verwacht bv. v1.2.0)" >&2
+            echo "'$version' is geen geldige versie (verwacht bv. 1.2.0)" >&2
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "zip=dist/duo-headers-$version.zip" >> "$GITHUB_OUTPUT"
 
       - name: Zip maken
         run: scripts/package.sh "${{ steps.version.outputs.version }}"
 
-      - name: Zip aan release hangen
+      - name: Zip bewaren bij deze run
+        uses: actions/upload-artifact@v4
+        with:
+          name: duo-headers-${{ steps.version.outputs.version }}
+          path: ${{ steps.version.outputs.zip }}
+
+      - name: Release maken (handmatig gestart)
+        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" "dist/duo-headers-${{ steps.version.outputs.version }}.zip" --clobber
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" "${{ steps.version.outputs.zip }}" \
+            --target "$GITHUB_SHA" --title "${{ steps.version.outputs.tag }}" --generate-notes
+
+      - name: Zip aan bestaande release hangen
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "${{ steps.version.outputs.zip }}" --clobber
 
       - name: Publiceren in de Chrome Web Store
         if: env.CWS_SERVICE_ACCOUNT_JSON != '' && env.CWS_PUBLISHER_ID != '' && env.CWS_EXTENSION_ID != ''
-        run: scripts/cws-publish.sh "dist/duo-headers-${{ steps.version.outputs.version }}.zip"
+        run: scripts/cws-publish.sh "${{ steps.version.outputs.zip }}"
