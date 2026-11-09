@@ -1,7 +1,8 @@
 // Service worker: vertaalt profielen naar declarativeNetRequest-regels.
 // Bij elke wijziging in storage worden alle dynamische regels opnieuw opgebouwd.
 
-import { getProfiles } from "./storage.js";
+import { getProfiles, profileDomains, activeHeaders } from "./storage.js";
+import { initToasts } from "./toasts.js";
 
 const ALL_RESOURCE_TYPES = [
   "main_frame", "sub_frame", "stylesheet", "script", "image", "font",
@@ -9,30 +10,18 @@ const ALL_RESOURCE_TYPES = [
   "webtransport", "webbundle", "other",
 ];
 
-// "*.example.com" en "https://example.com/pad" -> "example.com".
-// requestDomains matcht subdomeinen al automatisch.
-function normalizeDomain(input) {
-  let d = input.trim().toLowerCase();
-  if (!d) return null;
-  d = d.replace(/^[a-z]+:\/\//, "").replace(/^\*\./, "");
-  d = d.split("/")[0].split(":")[0];
-  return d || null;
-}
-
 function buildRules(profiles) {
   const rules = [];
   let id = 1;
   profiles.forEach((profile, index) => {
     if (!profile.enabled) return;
 
-    const domains = [...new Set(profile.domains.map(normalizeDomain).filter(Boolean))];
-    const requestHeaders = profile.headers
-      .filter((h) => h.name.trim())
-      .map((h) =>
-        h.operation === "remove"
-          ? { header: h.name.trim(), operation: "remove" }
-          : { header: h.name.trim(), operation: "set", value: h.value }
-      );
+    const domains = profileDomains(profile);
+    const requestHeaders = activeHeaders(profile).map((h) =>
+      h.operation === "remove"
+        ? { header: h.name, operation: "remove" }
+        : { header: h.name, operation: "set", value: h.value }
+    );
 
     if (domains.length === 0 || requestHeaders.length === 0) return;
 
@@ -71,3 +60,6 @@ chrome.runtime.onStartup.addListener(syncRules);
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.profiles) syncRules();
 });
+
+// Listeners moeten synchroon op top-level geregistreerd worden (MV3).
+initToasts();

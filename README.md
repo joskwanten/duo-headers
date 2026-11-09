@@ -16,6 +16,11 @@ Een profiel heeft een naam, een lijst domeinen en een lijst headers, en kan aan/
 - **Opties-pagina** ("Profielen beheren"): profielen aanmaken, hernoemen, domeinen en headers instellen,
   volgorde wijzigen, in-/uitklappen (status blijft bewaard), en importeren/exporteren als JSON (handig om profielen met het team te delen).
 
+- **Toast**: zodra een profiel op een request wordt toegepast, verschijnt rechtsonder op de pagina een toast
+  met de toegepaste profielen en hun headers. Dat geldt ook voor API-calls van de pagina naar een ander domein:
+  komt er later een profiel bij, dan wordt de toast bijgewerkt. Lange waarden worden afgekapt (hover toont de
+  volledige waarde). De toast verdwijnt na 6 seconden en blijft staan zolang je er met de muis op staat.
+
 Domeinen worden gematcht via `requestDomains`: `example.com` matcht ook alle subdomeinen.
 `*.example.com`, `https://` en paden worden automatisch weggestript.
 Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
@@ -24,9 +29,11 @@ Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
 
 | Bestand | Rol |
 |---|---|
-| `src/manifest.json` | MV3-manifest, permissies `declarativeNetRequest` + `storage` + host access |
+| `src/manifest.json` | MV3-manifest, permissies `declarativeNetRequest`, `webRequest`, `storage` + host access |
 | `src/storage.js` | Profielen lezen/schrijven in `chrome.storage.local` |
 | `src/background.js` | Service worker: zet bij elke wijziging alle actieve profielen om naar `declarativeNetRequest`-regels (`modifyHeaders`) |
+| `src/toasts.js` | Observeert requests (`webRequest`, alleen lezen) en bepaalt per tabblad welke profielen zijn toegepast |
+| `src/toast.js` | Content script dat de toast in de pagina toont (in een shadow root, los van de CSS van de pagina) |
 | `src/options.*` | Beheerpagina voor profielen |
 | `src/popup.*` | Snel aan/uit zetten |
 
