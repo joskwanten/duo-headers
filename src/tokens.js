@@ -68,7 +68,15 @@ async function requestToken(profile) {
   let token;
   let expiresIn;
   const path = ts.tokenPath.trim();
-  if (path) {
+  // "header:Authorization" of "HEADER.Authorization": token uit een response-header.
+  // Een "Bearer "-prefix wordt eraf gehaald, zodat {{token}} alleen het token zelf is.
+  const headerMatch = path.match(/^header[:.](.+)$/i);
+  if (headerMatch) {
+    const name = headerMatch[1].trim();
+    const value = res.headers.get(name);
+    if (!value) throw new Error(`Response-header "${name}" ontbreekt`);
+    token = value.trim().replace(/^bearer\s+/i, "");
+  } else if (path) {
     if (json === undefined) throw new Error("Response is geen JSON, maar er is een token-veld ingesteld");
     token = getPath(json, path);
     // expires_in naast het token-veld (bv. data.access_token -> data.expires_in)
@@ -78,7 +86,7 @@ async function requestToken(profile) {
   } else {
     token = typeof json === "string" ? json : text.trim();
   }
-  if (typeof token !== "string" || !token) throw new Error(`Geen token gevonden op pad "${path}"`);
+  if (typeof token !== "string" || !token) throw new Error(`Geen token gevonden via "${path}"`);
 
   const now = Date.now();
   const expiresAt = typeof expiresIn === "number" ? now + expiresIn * 1000

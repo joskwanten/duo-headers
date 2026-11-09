@@ -28,7 +28,7 @@ Per profiel kun je een token service instellen (vinkje **Token service** op de b
 | Veld | Betekenis |
 |---|---|
 | URL + methode | Endpoint van de token service (`GET` of `POST`, bij `POST` met optionele body; JSON krijgt automatisch `Content-Type: application/json`, anders form-encoded) |
-| Token-veld | Pad naar het token in de JSON-response, bv. `access_token` of `data.access_token`. Leeg = de hele response (als tekst) is het token |
+| Token-veld | Pad naar het token in de JSON-response, bv. `access_token` of `data.access_token`. Leeg = de hele response (als tekst) is het token. `header:Naam` (of `HEADER.Naam`) = token uit een response-header, bv. `header:Authorization`; een `Bearer `-prefix wordt eraf gehaald |
 | Header | Naam en waarde van de header op de doelsite; `{{token}}` wordt vervangen, standaard `Authorization: Bearer {{token}}` |
 
 - De (`set`-)headers van het profiel gaan mee naar de token service, cookies ook (`credentials: include`).
