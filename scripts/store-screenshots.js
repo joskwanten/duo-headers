@@ -55,5 +55,15 @@ const app = http.createServer((q, r) => r.end(`<html><body style="margin:0;font-
     <img src="data:image/png;base64,${popPng}" style="border-radius:12px;box-shadow:0 20px 50px #0008"></body>`);
   await canvas.waitForTimeout(300);
   await canvas.screenshot({ path: `${OUT}/screenshot-3-popup.png` });
+
+  // Kleine promotegel 440x280
+  const tile = await ctx.newPage();
+  await tile.setViewportSize({ width: 440, height: 280 });
+  await tile.setContent(`<body style="margin:0;width:440px;height:280px;display:flex;align-items:center;gap:22px;padding:0 34px;box-sizing:border-box;background:linear-gradient(135deg,#1e3a8a,#2563eb);font-family:system-ui;color:#fff">
+    <img src="data:image/png;base64,${require('fs').readFileSync(ext + '/icons/icon-128.png').toString('base64')}" style="width:104px;flex:none;filter:drop-shadow(0 6px 14px #0006)">
+    <div><div style="font-size:34px;font-weight:700;line-height:1.1">Duo Headers</div>
+    <div style="font-size:17px;opacity:.9;margin-top:8px;line-height:1.35">Headers en tokens per profiel, per domein</div></div></body>`);
+  await tile.waitForTimeout(200);
+  await tile.screenshot({ path: `${OUT}/promo-small-440x280.png` });
   await ctx.close(); auth.close(); app.close();
 })().catch(e => { console.error(e); process.exit(1); });

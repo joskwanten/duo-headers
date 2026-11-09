@@ -28,6 +28,8 @@ en krijgen updates automatisch (Chrome controleert dat zelf, meestal binnen enke
 | Taal | Nederlands |
 | Store-icoon (128×128) | `src/icons/icon-128.png` |
 | Schermafbeeldingen (1280×800) | `docs/store/screenshot-1-profielen.png`, `screenshot-2-toast.png`, `screenshot-3-popup.png` |
+| Small promo tile (440×280) | `docs/store/promo-small-440x280.png` |
+| Marquee promo tile (1400×560), video | niet nodig |
 
 **Beschrijving**:
 
