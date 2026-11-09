@@ -1,6 +1,8 @@
 # Bouwt de extensie-zip bij een nieuwe GitHub-release en hangt die aan de release.
 # Maak een release met een tag als v1.2.0; de versie in het manifest wordt daarop gezet.
-# De zip upload je daarna in de Chrome Web Store developer console.
+# Zijn de secrets CWS_SERVICE_ACCOUNT_JSON, CWS_PUBLISHER_ID en CWS_EXTENSION_ID ingesteld,
+# dan wordt de zip ook naar de Chrome Web Store geüpload en ingediend voor review.
+# Zonder die secrets upload je de zip handmatig in de developer console.
 name: Release
 
 on:
@@ -13,6 +15,10 @@ permissions:
 jobs:
   package:
     runs-on: ubuntu-latest
+    env:
+      CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+      CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,3 +40,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "$GITHUB_REF_NAME" "dist/duo-headers-${{ steps.version.outputs.version }}.zip" --clobber
+
+      - name: Publiceren in de Chrome Web Store
+        if: env.CWS_SERVICE_ACCOUNT_JSON != '' && env.CWS_PUBLISHER_ID != '' && env.CWS_EXTENSION_ID != ''
+        run: scripts/cws-publish.sh "dist/duo-headers-${{ steps.version.outputs.version }}.zip"

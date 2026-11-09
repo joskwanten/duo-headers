@@ -82,6 +82,49 @@ Na goedkeuring staat de installatielink bovenaan het item in de developer consol
 Updates gaan meestal sneller door de review dan de eerste versie. Wijzigen de permissies in het manifest,
 dan zet Chrome de extensie bij gebruikers uit tot ze de nieuwe rechten accepteren; vermijd dat waar mogelijk.
 
+## Automatisch publiceren vanuit GitHub (optioneel)
+
+Na de **eerste handmatige upload** (de API kan geen nieuw item aanmaken) kan de *Release*-workflow nieuwe
+versies zelf uploaden en indienen voor review. Dat gaat via de Chrome Web Store API v2 met een service account.
+
+### 1. Google Cloud: service account maken
+
+1. Ga naar https://console.cloud.google.com en maak een project aan (bv. `duo-headers-release`).
+2. **APIs & Services → Library** → zoek *Chrome Web Store API* → **Enable**.
+3. **IAM & Admin → Service Accounts → Create service account**, bv. `cws-publisher`.
+   Rollen in het project zijn niet nodig.
+4. Open het service account → **Keys → Add key → Create new key → JSON**. Het JSON-bestand wordt gedownload;
+   bewaar het veilig en verwijder het lokaal zodra het in GitHub staat.
+
+   Lukt dit niet doordat je organisatie het aanmaken van sleutels blokkeert
+   (`iam.disableServiceAccountKeyCreation`), dan moet een Cloud-beheerder dat voor dit project toestaan.
+
+### 2. Chrome Web Store developer console: toegang geven
+
+1. Open https://chrome.google.com/webstore/devconsole → **Account**.
+2. Voeg bij de service accounts het e-mailadres van het service account toe
+   (`cws-publisher@<project>.iam.gserviceaccount.com`, staat ook in het JSON-bestand als `client_email`).
+   Per publisher kan één service account worden gekoppeld.
+3. Noteer de **publisher-ID** (in de developer console, onder Account) en de **item-ID** van de extensie
+   (de lange ID van 32 letters, zichtbaar bij het item en in de store-URL).
+
+### 3. GitHub: secrets toevoegen
+
+Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Waarde |
+|---|---|
+| `CWS_SERVICE_ACCOUNT_JSON` | de volledige inhoud van het JSON-sleutelbestand |
+| `CWS_PUBLISHER_ID` | publisher-ID |
+| `CWS_EXTENSION_ID` | item-ID van de extensie |
+
+Vanaf dan wordt bij elke nieuwe GitHub-release de zip automatisch geüpload en ingediend; na de review
+wordt hij gepubliceerd. Het script staat in `scripts/cws-publish.sh` en kan ook lokaal draaien met dezelfde
+omgevingsvariabelen.
+
+Let op: heb je instellingen (zoals zichtbaarheid) handmatig in de developer console gewijzigd, publiceer dan eerst
+één keer handmatig; anders kan publiceren via de API geweigerd worden.
+
 ## Schermafbeeldingen bijwerken
 
 Na UI-wijzigingen: `node scripts/store-screenshots.js` (vereist Node + Playwright met Chromium).
