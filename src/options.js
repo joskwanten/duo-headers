@@ -46,13 +46,33 @@ function summarize(profile) {
   return `${domains} · ${h} header${h === 1 ? "" : "s"}${token}`;
 }
 
+// Vergelijking los van sleutelvolgorde: chrome.storage geeft objecten
+// terug met gesorteerde sleutels, dus JSON.stringify is niet betrouwbaar.
+function canonical(value) {
+  return JSON.stringify(value, (_, v) =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
+      : v
+  );
+}
+
+// Laatst door deze pagina opgeslagen versie: meldingen daarvan negeren we,
+// anders wordt de pagina na elke opslag opnieuw opgebouwd (en ben je je focus kwijt).
+let lastSaved = "";
+
+function save() {
+  clearTimeout(saveTimer);
+  lastSaved = canonical(profiles);
+  return saveProfiles(profiles);
+}
+
 function scheduleSave() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => saveProfiles(profiles), 300);
+  saveTimer = setTimeout(save, 300);
 }
 
 function commit() {
-  saveProfiles(profiles);
+  save();
   render();
 }
 
@@ -79,6 +99,7 @@ function renderHeader(profile, header, list) {
 
 function renderProfile(profile, index) {
   const el = profileTpl.content.firstElementChild.cloneNode(true);
+  el.dataset.id = profile.id;
   const enabled = el.querySelector(".enabled");
   const name = el.querySelector(".name");
   const domains = el.querySelector(".domains");
@@ -172,8 +193,7 @@ function renderTokenService(profile, el) {
 
   $(".ts-refresh").onclick = async () => {
     const btn = $(".ts-refresh");
-    clearTimeout(saveTimer);
-    await saveProfiles(profiles); // zeker weten dat de laatste wijzigingen er zijn
+    await save(); // zeker weten dat de laatste wijzigingen er zijn
     btn.disabled = true;
     btn.textContent = "Bezig…";
     await chrome.runtime.sendMessage({ type: "duo-refresh-token", profileId: profile.id });
@@ -189,10 +209,39 @@ function move(index, delta) {
   commit();
 }
 
+// Onthoudt welk veld focus had (profiel-id + klasse + volgnummer) en de cursorpositie,
+// zodat een herbouw van de lijst het typen niet onderbreekt.
+function captureFocus() {
+  const el = document.activeElement;
+  const section = el?.closest?.(".profile");
+  if (!section || !el.classList.length) return null;
+  const cls = el.classList[0];
+  return {
+    profileId: section.dataset.id,
+    cls,
+    index: [...section.querySelectorAll(`.${cls}`)].indexOf(el),
+    start: el.selectionStart,
+    end: el.selectionEnd,
+  };
+}
+
+function restoreFocus(f) {
+  if (!f) return;
+  const section = container.querySelector(`.profile[data-id="${CSS.escape(f.profileId)}"]`);
+  const el = section?.querySelectorAll(`.${f.cls}`)[f.index];
+  if (!el) return;
+  el.focus();
+  if (typeof f.start === "number" && "setSelectionRange" in el) {
+    try { el.setSelectionRange(f.start, f.end); } catch { /* bv. checkbox */ }
+  }
+}
+
 function render() {
+  const focus = captureFocus();
   container.replaceChildren();
   statusUpdaters.clear();
   profiles.forEach(renderProfile);
+  restoreFocus(focus);
 }
 
 document.getElementById("collapse-all").onclick = () => {
@@ -239,10 +288,17 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
   if (area !== "local" || !changes.profiles) return;
   const incoming = changes.profiles.newValue ?? [];
-  if (JSON.stringify(incoming) !== JSON.stringify(profiles)) { profiles = incoming; render(); }
+  const key = canonical(incoming);
+  if (key === lastSaved) return; // onze eigen opslag
+  // Echte wijziging van buitenaf (popup, ander tabblad): overnemen. Focus en cursor blijven behouden.
+  clearTimeout(saveTimer);
+  lastSaved = key;
+  profiles = incoming;
+  render();
 });
 
 profiles = await getProfiles();
+lastSaved = canonical(profiles);
 tokens = await getTokens();
 collapsed = new Set((await chrome.storage.local.get(COLLAPSED_KEY))[COLLAPSED_KEY] ?? []);
 render();
