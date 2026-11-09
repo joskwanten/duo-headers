@@ -1,0 +1,17 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; font-size: 14px; }
+body { margin: 0; padding: 16px; }
+h1 { font-size: 18px; margin: 0 0 12px; }
+button { cursor: pointer; padding: 4px 10px; }
+input[type="text"], textarea, select { font: inherit; padding: 4px 6px; box-sizing: border-box; }
+.profile { border: 1px solid #8884; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.profile header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.profile header .name { flex: 1; font-weight: 600; }
+.profile label.block { display: block; margin: 8px 0 4px; font-weight: 600; }
+.profile textarea { width: 100%; min-height: 60px; }
+.header-row { display: flex; gap: 6px; margin-bottom: 4px; }
+.header-row .h-name { flex: 1; }
+.header-row .h-value { flex: 2; }
+.muted { opacity: .7; }
+.popup { width: 260px; }
+.popup .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #8883; }
+.popup .row span { flex: 1; }

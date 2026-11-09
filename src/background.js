@@ -1,0 +1,73 @@
+// Service worker: vertaalt profielen naar declarativeNetRequest-regels.
+// Bij elke wijziging in storage worden alle dynamische regels opnieuw opgebouwd.
+
+import { getProfiles } from "./storage.js";
+
+const ALL_RESOURCE_TYPES = [
+  "main_frame", "sub_frame", "stylesheet", "script", "image", "font",
+  "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket",
+  "webtransport", "webbundle", "other",
+];
+
+// "*.example.com" en "https://example.com/pad" -> "example.com".
+// requestDomains matcht subdomeinen al automatisch.
+function normalizeDomain(input) {
+  let d = input.trim().toLowerCase();
+  if (!d) return null;
+  d = d.replace(/^[a-z]+:\/\//, "").replace(/^\*\./, "");
+  d = d.split("/")[0].split(":")[0];
+  return d || null;
+}
+
+function buildRules(profiles) {
+  const rules = [];
+  let id = 1;
+  profiles.forEach((profile, index) => {
+    if (!profile.enabled) return;
+
+    const domains = [...new Set(profile.domains.map(normalizeDomain).filter(Boolean))];
+    const requestHeaders = profile.headers
+      .filter((h) => h.name.trim())
+      .map((h) =>
+        h.operation === "remove"
+          ? { header: h.name.trim(), operation: "remove" }
+          : { header: h.name.trim(), operation: "set", value: h.value }
+      );
+
+    if (domains.length === 0 || requestHeaders.length === 0) return;
+
+    rules.push({
+      id: id++,
+      // Profielen bovenaan de lijst winnen bij conflicterende headers.
+      priority: profiles.length - index,
+      action: { type: "modifyHeaders", requestHeaders },
+      condition: { requestDomains: domains, resourceTypes: ALL_RESOURCE_TYPES },
+    });
+  });
+  return rules;
+}
+
+async function syncRules() {
+  const profiles = await getProfiles();
+  const addRules = buildRules(profiles);
+  const existing = await chrome.declarativeNetRequest.getDynamicRules();
+
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: existing.map((r) => r.id),
+      addRules,
+    });
+  } catch (err) {
+    console.error("Kon regels niet toepassen:", err, addRules);
+  }
+
+  const active = profiles.filter((p) => p.enabled).length;
+  await chrome.action.setBadgeText({ text: active ? String(active) : "" });
+  await chrome.action.setBadgeBackgroundColor({ color: "#2563eb" });
+}
+
+chrome.runtime.onInstalled.addListener(syncRules);
+chrome.runtime.onStartup.addListener(syncRules);
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.profiles) syncRules();
+});

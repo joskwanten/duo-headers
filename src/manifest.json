@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Duo Headers",
+  "version": "0.1.0",
+  "description": "Zet request headers per profiel voor gekoppelde domeinen.",
+  "permissions": ["declarativeNetRequest", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Duo Headers",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

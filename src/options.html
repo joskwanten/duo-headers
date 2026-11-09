@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Duo Headers – Profielen</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Profielen</h1>
+  <p class="muted">Domeinen: één per regel. Subdomeinen worden automatisch meegenomen
+    (<code>example.com</code> matcht ook <code>api.example.com</code>).
+    Bovenste profiel wint bij conflicterende headers.</p>
+  <div id="profiles"></div>
+  <button id="add">+ Profiel toevoegen</button>
+  <button id="export">Exporteren</button>
+  <button id="import">Importeren</button>
+  <input type="file" id="import-file" accept="application/json" hidden>
+
+  <template id="profile-tpl">
+    <section class="profile">
+      <header>
+        <input type="checkbox" class="enabled" title="Actief">
+        <input type="text" class="name" placeholder="Profielnaam">
+        <button class="up" title="Omhoog">↑</button>
+        <button class="down" title="Omlaag">↓</button>
+        <button class="delete">Verwijderen</button>
+      </header>
+      <label class="block">Domeinen</label>
+      <textarea class="domains" placeholder="example.com&#10;test.local"></textarea>
+      <label class="block">Headers</label>
+      <div class="headers"></div>
+      <button class="add-header">+ Header</button>
+    </section>
+  </template>
+
+  <template id="header-tpl">
+    <div class="header-row">
+      <select class="h-op">
+        <option value="set">set</option>
+        <option value="remove">remove</option>
+      </select>
+      <input type="text" class="h-name" placeholder="Header-naam">
+      <input type="text" class="h-value" placeholder="Waarde">
+      <button class="h-delete" title="Verwijderen">×</button>
+    </div>
+  </template>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
