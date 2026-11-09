@@ -1,8 +1,9 @@
 // Service worker: vertaalt profielen naar declarativeNetRequest-regels.
 // Bij elke wijziging in storage worden alle dynamische regels opnieuw opgebouwd.
 
-import { getProfiles, profileDomains, activeHeaders } from "./storage.js";
+import { getProfiles, getTokens, profileDomains, effectiveHeaders } from "./storage.js";
 import { initToasts } from "./toasts.js";
+import { initTokens } from "./tokens.js";
 
 const ALL_RESOURCE_TYPES = [
   "main_frame", "sub_frame", "stylesheet", "script", "image", "font",
@@ -10,14 +11,14 @@ const ALL_RESOURCE_TYPES = [
   "webtransport", "webbundle", "other",
 ];
 
-function buildRules(profiles) {
+function buildRules(profiles, tokens) {
   const rules = [];
   let id = 1;
   profiles.forEach((profile, index) => {
     if (!profile.enabled) return;
 
     const domains = profileDomains(profile);
-    const requestHeaders = activeHeaders(profile).map((h) =>
+    const requestHeaders = effectiveHeaders(profile, tokens).map((h) =>
       h.operation === "remove"
         ? { header: h.name, operation: "remove" }
         : { header: h.name, operation: "set", value: h.value }
@@ -37,8 +38,8 @@ function buildRules(profiles) {
 }
 
 async function syncRules() {
-  const profiles = await getProfiles();
-  const addRules = buildRules(profiles);
+  const [profiles, tokens] = await Promise.all([getProfiles(), getTokens()]);
+  const addRules = buildRules(profiles, tokens);
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
 
   try {
@@ -58,8 +59,9 @@ async function syncRules() {
 chrome.runtime.onInstalled.addListener(syncRules);
 chrome.runtime.onStartup.addListener(syncRules);
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.profiles) syncRules();
+  if ((area === "local" && changes.profiles) || (area === "session" && changes.tokens)) syncRules();
 });
 
 // Listeners moeten synchroon op top-level geregistreerd worden (MV3).
 initToasts();
+initTokens();

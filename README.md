@@ -21,6 +21,24 @@ Een profiel heeft een naam, een lijst domeinen en een lijst headers, en kan aan/
   komt er later een profiel bij, dan wordt de toast bijgewerkt. Lange waarden worden afgekapt (hover toont de
   volledige waarde). De toast verdwijnt na 6 seconden en blijft staan zolang je er met de muis op staat.
 
+### Token service
+
+Per profiel kun je een token service instellen (vinkje **Token service** op de beheerpagina):
+
+| Veld | Betekenis |
+|---|---|
+| URL + methode | Endpoint van de token service (`GET` of `POST`, bij `POST` met optionele body; JSON krijgt automatisch `Content-Type: application/json`, anders form-encoded) |
+| Token-veld | Pad naar het token in de JSON-response, bv. `access_token` of `data.access_token`. Leeg = de hele response (als tekst) is het token |
+| Header | Naam en waarde van de header op de doelsite; `{{token}}` wordt vervangen, standaard `Authorization: Bearer {{token}}` |
+
+- De (`set`-)headers van het profiel gaan mee naar de token service, cookies ook (`credentials: include`).
+  Headers die de browser niet toestaat in `fetch` (zoals `Cookie` en `Host`) worden daarbij genegeerd.
+- Het token wordt opgehaald zodra het profiel aan staat en vernieuwd 1 minuut voordat het verloopt.
+  De verloopdatum komt uit `expires_in` (naast het token-veld), anders uit de `exp`-claim van een JWT,
+  anders na 15 minuten. Bij een fout wordt het elke minuut opnieuw geprobeerd; de fout staat in de status.
+- Tokens worden alleen in het geheugen bewaard (`chrome.storage.session`) en zijn weg na het sluiten van de browser.
+- Met **Nu ophalen** haal je direct een nieuw token op.
+
 Domeinen worden gematcht via `requestDomains`: `example.com` matcht ook alle subdomeinen.
 `*.example.com`, `https://` en paden worden automatisch weggestript.
 Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
@@ -29,10 +47,11 @@ Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
 
 | Bestand | Rol |
 |---|---|
-| `src/manifest.json` | MV3-manifest, permissies `declarativeNetRequest`, `webRequest`, `storage` + host access |
+| `src/manifest.json` | MV3-manifest, permissies `declarativeNetRequest`, `webRequest`, `storage`, `alarms` + host access |
 | `src/storage.js` | Profielen lezen/schrijven in `chrome.storage.local` |
 | `src/background.js` | Service worker: zet bij elke wijziging alle actieve profielen om naar `declarativeNetRequest`-regels (`modifyHeaders`) |
 | `src/toasts.js` | Observeert requests (`webRequest`, alleen lezen) en bepaalt per tabblad welke profielen zijn toegepast |
+| `src/tokens.js` | Haalt tokens op bij de token service en vernieuwt ze (via `chrome.alarms`) |
 | `src/toast.js` | Content script dat de toast in de pagina toont (in een shadow root, los van de CSS van de pagina) |
 | `src/options.*` | Beheerpagina voor profielen |
 | `src/popup.*` | Snel aan/uit zetten |

@@ -35,6 +35,32 @@
       <label class="block">Headers</label>
       <div class="headers"></div>
       <button class="add-header">+ Header</button>
+
+      <label class="block ts-toggle"><input type="checkbox" class="ts-enabled"> Token service</label>
+      <div class="ts-fields">
+        <div class="ts-grid">
+          <span>URL</span>
+          <div class="ts-row">
+            <select class="ts-method"><option>GET</option><option>POST</option></select>
+            <input type="text" class="ts-url" placeholder="https://auth.example.com/token">
+          </div>
+          <span class="ts-body-label">Body</span>
+          <textarea class="ts-body" placeholder='{"client_id": "..."} of grant_type=client_credentials&amp;...'></textarea>
+          <span>Token-veld</span>
+          <input type="text" class="ts-path" placeholder="access_token (leeg = hele response)">
+          <span>Header</span>
+          <div class="ts-row">
+            <input type="text" class="ts-header" placeholder="Authorization">
+            <input type="text" class="ts-template" placeholder="Bearer {{token}}">
+          </div>
+        </div>
+        <p class="muted ts-hint">De headers van dit profiel gaan mee naar de token service.
+          <code>{{token}}</code> wordt vervangen door het opgehaalde token.</p>
+        <div class="ts-status-row">
+          <span class="ts-status muted"></span>
+          <button class="ts-refresh">Nu ophalen</button>
+        </div>
+      </div>
       </div>
     </section>
   </template>

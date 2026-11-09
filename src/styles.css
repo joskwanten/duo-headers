@@ -20,3 +20,16 @@ input[type="text"], textarea, select { font: inherit; padding: 4px 6px; box-sizi
 .profile.collapsed .summary { display: block; }
 .profile.collapsed .body { display: none; }
 .profile.collapsed header { margin-bottom: 4px; }
+.ts-toggle { display: flex !important; align-items: center; gap: 6px; margin-top: 14px !important; }
+.ts-fields { border-left: 3px solid #2563eb55; padding-left: 10px; }
+.profile:not(.ts-on) .ts-fields { display: none; }
+.ts-grid { display: grid; grid-template-columns: 90px 1fr; gap: 6px 8px; align-items: center; }
+.ts-row { display: flex; gap: 6px; }
+.ts-row .ts-url, .ts-row .ts-template { flex: 1; }
+.ts-row .ts-header { width: 160px; }
+.ts-grid textarea { min-height: 40px; }
+.ts-hint { margin: 6px 0; }
+.ts-status-row { display: flex; gap: 8px; align-items: center; }
+.ts-status { flex: 1; }
+.ts-status.error { color: #dc2626; opacity: 1; }
+.ts-status.ok { color: #16a34a; opacity: 1; }

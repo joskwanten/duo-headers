@@ -7,16 +7,16 @@
 // bijgehouden; een toast verschijnt bij het laden van de pagina en opnieuw
 // zodra er later (bv. via een API-call) een extra profiel bijkomt.
 
-import { getProfiles, profileDomains, matchesDomain, activeHeaders } from "./storage.js";
+import { getProfiles, getTokens, profileDomains, matchesDomain, effectiveHeaders } from "./storage.js";
 
 let profilesPromise = loadProfiles();
 const tabs = new Map(); // tabId -> { matched: Set<profileId>, ready: boolean, shownKey: string }
 
 async function loadProfiles() {
-  const profiles = await getProfiles();
+  const [profiles, tokens] = await Promise.all([getProfiles(), getTokens()]);
   return profiles
     .filter((p) => p.enabled)
-    .map((p) => ({ ...p, normDomains: profileDomains(p), activeHeaders: activeHeaders(p) }))
+    .map((p) => ({ ...p, normDomains: profileDomains(p), activeHeaders: effectiveHeaders(p, tokens) }))
     .filter((p) => p.normDomains.length && p.activeHeaders.length);
 }
 
@@ -75,6 +75,8 @@ export function initToasts() {
   chrome.tabs.onRemoved.addListener((tabId) => tabs.delete(tabId));
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.profiles) profilesPromise = loadProfiles();
+    if ((area === "local" && changes.profiles) || (area === "session" && changes.tokens)) {
+      profilesPromise = loadProfiles();
+    }
   });
 }

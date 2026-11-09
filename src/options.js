@@ -1,4 +1,4 @@
-import { getProfiles, saveProfiles, newProfile } from "./storage.js";
+import { getProfiles, saveProfiles, newProfile, getTokens, defaultTokenService } from "./storage.js";
 
 const container = document.getElementById("profiles");
 const profileTpl = document.getElementById("profile-tpl");
@@ -16,11 +16,34 @@ function saveCollapsed() {
   chrome.storage.local.set({ [COLLAPSED_KEY]: [...collapsed] });
 }
 
+// Token-status per profiel (uit chrome.storage.session), live bijgewerkt.
+let tokens = {};
+const statusUpdaters = new Map(); // profileId -> () => void
+
+function formatTime(ms) {
+  return new Date(ms).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function tokenStatus(profile) {
+  const ts = profile.tokenService;
+  if (!ts.url.trim()) return { text: "Vul een URL in.", cls: "" };
+  if (!profile.enabled) return { text: "Profiel staat uit; token wordt niet opgehaald.", cls: "" };
+  const t = tokens[profile.id];
+  if (!t) return { text: "Nog geen token opgehaald…", cls: "" };
+  if (t.error) {
+    const still = t.token && t.expiresAt > Date.now() ? ` (vorig token geldig tot ${formatTime(t.expiresAt)})` : "";
+    return { text: `Fout om ${formatTime(t.attemptAt)}: ${t.error}${still}`, cls: "error" };
+  }
+  const preview = t.token.length > 16 ? t.token.slice(0, 16) + "…" : t.token;
+  return { text: `Token ${preview} opgehaald om ${formatTime(t.fetchedAt)}, geldig tot ${formatTime(t.expiresAt)}`, cls: "ok" };
+}
+
 function summarize(profile) {
   const d = profile.domains.length;
   const h = profile.headers.filter((x) => x.name.trim()).length;
   const domains = d ? profile.domains.slice(0, 3).join(", ") + (d > 3 ? ` +${d - 3}` : "") : "geen domeinen";
-  return `${domains} · ${h} header${h === 1 ? "" : "s"}`;
+  const token = profile.tokenService?.enabled ? " · token service" : "";
+  return `${domains} · ${h} header${h === 1 ? "" : "s"}${token}`;
 }
 
 function scheduleSave() {
@@ -98,7 +121,65 @@ function renderProfile(profile, index) {
   };
 
   profile.headers.forEach((h) => renderHeader(profile, h, headers));
+  renderTokenService(profile, el);
   container.append(el);
+}
+
+function renderTokenService(profile, el) {
+  profile.tokenService = { ...defaultTokenService(), ...profile.tokenService };
+  const ts = profile.tokenService;
+  const $ = (sel) => el.querySelector(sel);
+  const enabled = $(".ts-enabled"), method = $(".ts-method"), url = $(".ts-url"), body = $(".ts-body"),
+    path = $(".ts-path"), header = $(".ts-header"), template = $(".ts-template"), status = $(".ts-status");
+
+  enabled.checked = ts.enabled;
+  method.value = ts.method;
+  url.value = ts.url;
+  body.value = ts.body;
+  path.value = ts.tokenPath;
+  header.value = ts.headerName;
+  template.value = ts.valueTemplate;
+
+  const updateVisibility = () => {
+    el.classList.toggle("ts-on", ts.enabled);
+    const showBody = ts.method !== "GET";
+    body.hidden = $(".ts-body-label").hidden = !showBody;
+  };
+  const updateStatus = () => {
+    const { text, cls } = tokenStatus(profile);
+    status.textContent = text;
+    status.className = `ts-status muted ${cls}`;
+  };
+  updateVisibility();
+  updateStatus();
+  statusUpdaters.set(profile.id, updateStatus);
+
+  const bind = (input, key, event = "oninput") => {
+    input[event] = () => {
+      ts[key] = input.type === "checkbox" ? input.checked : input.value;
+      updateVisibility();
+      updateStatus();
+      scheduleSave();
+    };
+  };
+  bind(enabled, "enabled", "onchange");
+  bind(method, "method", "onchange");
+  bind(url, "url");
+  bind(body, "body");
+  bind(path, "tokenPath");
+  bind(header, "headerName");
+  bind(template, "valueTemplate");
+
+  $(".ts-refresh").onclick = async () => {
+    const btn = $(".ts-refresh");
+    clearTimeout(saveTimer);
+    await saveProfiles(profiles); // zeker weten dat de laatste wijzigingen er zijn
+    btn.disabled = true;
+    btn.textContent = "Bezig…";
+    await chrome.runtime.sendMessage({ type: "duo-refresh-token", profileId: profile.id });
+    btn.disabled = false;
+    btn.textContent = "Nu ophalen";
+  };
 }
 
 function move(index, delta) {
@@ -110,6 +191,7 @@ function move(index, delta) {
 
 function render() {
   container.replaceChildren();
+  statusUpdaters.clear();
   profiles.forEach(renderProfile);
 }
 
@@ -150,11 +232,17 @@ importFile.onchange = async () => {
 
 // Wijzigingen vanuit de popup direct tonen (bv. profiel aan/uit).
 chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "session" && changes.tokens) {
+    tokens = changes.tokens.newValue ?? {};
+    statusUpdaters.forEach((update) => update());
+    return;
+  }
   if (area !== "local" || !changes.profiles) return;
   const incoming = changes.profiles.newValue ?? [];
   if (JSON.stringify(incoming) !== JSON.stringify(profiles)) { profiles = incoming; render(); }
 });
 
 profiles = await getProfiles();
+tokens = await getTokens();
 collapsed = new Set((await chrome.storage.local.get(COLLAPSED_KEY))[COLLAPSED_KEY] ?? []);
 render();
