@@ -1,0 +1,19 @@
+# Controleert de koppeling met de Chrome Web Store (service account, rechten, publisher- en item-ID)
+# door alleen de status van het item op te vragen. Uploadt of publiceert niets.
+# Starten via Actions → "Chrome Web Store check" → Run workflow.
+name: Chrome Web Store check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Status opvragen
+        env:
+          CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+        run: scripts/cws-publish.sh --check

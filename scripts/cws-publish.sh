@@ -8,12 +8,13 @@
 #   CWS_EXTENSION_ID          ID van het item (de extensie) in de store
 #
 # Gebruik: scripts/cws-publish.sh dist/duo-headers-1.2.0.zip
+#         scripts/cws-publish.sh --check     alleen inloggen en de status opvragen (uploadt niets)
 #
 # Let op: de eerste versie van een item moet handmatig via de developer console worden geüpload;
 # de API kan geen nieuw item aanmaken.
 set -euo pipefail
 
-zip_file="${1:?Gebruik: $0 <zip>}"
+zip_file="${1:?Gebruik: $0 <zip> | --check}"
 : "${CWS_SERVICE_ACCOUNT_JSON:?ontbreekt}" "${CWS_PUBLISHER_ID:?ontbreekt}" "${CWS_EXTENSION_ID:?ontbreekt}"
 
 api="https://chromewebstore.googleapis.com"
@@ -39,6 +40,13 @@ token=$(curl -sS --fail-with-body https://oauth2.googleapis.com/token \
   --data-urlencode "assertion=${assertion}" \
   | python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')
 auth=(-H "Authorization: Bearer ${token}")
+
+if [[ "$zip_file" == "--check" ]]; then
+  echo "Inloggen gelukt als ${client_email}. Status van het item:"
+  curl -sS --fail-with-body "${auth[@]}" "${api}/v2/${item}:fetchStatus"
+  echo
+  exit 0
+fi
 
 # --- Upload ---
 echo "Uploaden: ${zip_file}"
