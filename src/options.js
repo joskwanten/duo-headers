@@ -124,13 +124,15 @@ function renderProfile(profile, index) {
   name.value = profile.name;
   domains.value = profile.domains.join("\n");
 
-  enabled.onchange = () => { profile.enabled = enabled.checked; scheduleSave(); };
+  el.classList.toggle("is-enabled", profile.enabled);
+  enabled.onchange = () => { profile.enabled = enabled.checked; el.classList.toggle("is-enabled", enabled.checked); scheduleSave(); };
   name.oninput = () => { profile.name = name.value; scheduleSave(); };
   domains.oninput = () => {
     profile.domains = domains.value.split("\n").map((d) => d.trim()).filter(Boolean);
     scheduleSave();
   };
 
+  el.querySelector(".export").onclick = () => exportProfile(profile);
   el.querySelector(".delete").onclick = () => {
     if (confirm(`Profiel "${profile.name}" verwijderen?`)) { collapsed.delete(profile.id); saveCollapsed(); profiles.splice(index, 1); commit(); }
   };
@@ -253,30 +255,104 @@ document.getElementById("expand-all").onclick = () => {
 
 document.getElementById("add").onclick = () => { profiles.push(newProfile()); commit(); };
 
-document.getElementById("export").onclick = () => {
-  const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: "application/json" });
-  const a = Object.assign(document.createElement("a"), {
-    href: URL.createObjectURL(blob),
-    download: "duo-headers-profielen.json",
-  });
-  a.click();
-  URL.revokeObjectURL(a.href);
-};
+// --- Exporteren / importeren ---------------------------------------------
+// Bestandsformaat: altijd een JSON-lijst met profielen (ook bij één profiel),
+// zodat elk exportbestand op beide manieren geïmporteerd kan worden.
 
+function slug(text) {
+  return (text || "profiel").toLowerCase().normalize("NFKD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "") || "profiel";
+}
+
+function download(list, filename) {
+  const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: filename });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function exportProfile(profile) {
+  const { id, ...rest } = profile; // id is lokaal; bij import krijgt het profiel een nieuwe
+  download([rest], `duo-headers-${slug(profile.name)}.json`);
+  notify(`Profiel "${profile.name || "(naamloos)"}" geëxporteerd.`);
+}
+
+// Maakt van onbekende invoer een geldig profiel (met nieuw id).
+function sanitizeProfile(p) {
+  if (!p || typeof p !== "object" || Array.isArray(p)) throw new Error("Ongeldig profiel in bestand");
+  const str = (v) => (typeof v === "string" ? v : "");
+  const base = newProfile();
+  return {
+    ...base,
+    name: str(p.name) || base.name,
+    enabled: p.enabled === true,
+    domains: Array.isArray(p.domains) ? p.domains.filter((d) => typeof d === "string") : [],
+    headers: Array.isArray(p.headers)
+      ? p.headers.filter((h) => h && typeof h === "object").map((h) => ({
+          name: str(h.name), value: str(h.value), operation: h.operation === "remove" ? "remove" : "set",
+        }))
+      : [],
+    tokenService: { ...defaultTokenService(), ...(p.tokenService && typeof p.tokenService === "object" ? p.tokenService : {}) },
+  };
+}
+
+async function readProfilesFile(file) {
+  let data;
+  try { data = JSON.parse(await file.text()); } catch { throw new Error("Bestand is geen geldige JSON"); }
+  const list = Array.isArray(data) ? data : [data]; // los profielobject ook toestaan
+  if (list.length === 0) throw new Error("Geen profielen in bestand");
+  return list.map(sanitizeProfile);
+}
+
+function uniqueName(name) {
+  const names = new Set(profiles.map((p) => p.name));
+  if (!names.has(name)) return name;
+  let i = 2;
+  while (names.has(`${name} (${i})`)) i++;
+  return `${name} (${i})`;
+}
+
+let noticeTimer;
+function notify(text, isError = false) {
+  const n = document.getElementById("notice");
+  n.textContent = text;
+  n.className = `notice ${isError ? "notice--error" : ""}`;
+  n.hidden = false;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => { n.hidden = true; }, 5000);
+}
+
+// Eén bestandskiezer voor beide import-varianten.
 const importFile = document.getElementById("import-file");
-document.getElementById("import").onclick = () => importFile.click();
+let importMode = "add";
+function pickImport(mode) { importMode = mode; importFile.click(); }
+
 importFile.onchange = async () => {
   const file = importFile.files[0];
+  importFile.value = "";
   if (!file) return;
   try {
-    const imported = JSON.parse(await file.text());
-    if (!Array.isArray(imported)) throw new Error("Verwacht een lijst met profielen");
-    profiles = imported.map((p) => ({ ...newProfile(), ...p, id: crypto.randomUUID() }));
-    commit();
+    const imported = await readProfilesFile(file);
+    if (importMode === "replace") {
+      if (!confirm(`Alle ${profiles.length} huidige profielen vervangen door ${imported.length} profiel(en) uit "${file.name}"?`)) return;
+      profiles = imported;
+      commit();
+      notify(`${imported.length} profiel(en) geïmporteerd; bestaande profielen vervangen.`);
+    } else {
+      for (const p of imported) { p.name = uniqueName(p.name); profiles.push(p); }
+      commit();
+      container.querySelector(`.profile[data-id="${CSS.escape(imported[0].id)}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      notify(imported.length === 1 ? `Profiel "${imported[0].name}" toegevoegd.` : `${imported.length} profielen toegevoegd.`);
+    }
   } catch (err) {
-    alert(`Import mislukt: ${err.message}`);
+    notify(`Import mislukt: ${err.message}`, true);
   }
-  importFile.value = "";
+};
+
+document.getElementById("import-add").onclick = () => pickImport("add");
+document.getElementById("import-replace").onclick = () => pickImport("replace");
+document.getElementById("export-all").onclick = () => {
+  download(profiles.map(({ id, ...rest }) => rest), "duo-headers-profielen.json");
+  notify(`${profiles.length} profiel(en) geëxporteerd.`);
 };
 
 // Wijzigingen vanuit de popup direct tonen (bv. profiel aan/uit).

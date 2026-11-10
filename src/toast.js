@@ -5,21 +5,25 @@
   const MAX_VALUE = 60;
   let host, hideTimer;
 
+  // DUO-huisstijl: donkerblauw vlak, rechte hoeken, RijksoverheidSans (indien geïnstalleerd).
   const css = `
     .toast { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647;
-      max-width: 380px; padding: 12px 14px; border-radius: 10px;
-      background: #1e293b; color: #f1f5f9; box-shadow: 0 8px 24px #0006;
-      font: 13px/1.4 system-ui, sans-serif; transition: opacity .2s, transform .2s; }
+      max-width: 400px; padding: 12px 16px 14px; border-radius: 0;
+      background: #154273; color: #fff; border-top: 5px solid #007bc7;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+      font: 14px/1.45 "RijksoverheidSans", "RijksoverheidSansText", "RO Sans", Helvetica, Arial, sans-serif;
+      transition: opacity .2s, transform .2s; }
     .toast.hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
-    .title { font-weight: 600; color: #93c5fd; margin-bottom: 6px; padding-right: 20px; }
-    .close { position: absolute; top: 6px; right: 8px; border: 0; background: none;
-      color: #94a3b8; font-size: 16px; cursor: pointer; }
+    .title { font-weight: 700; font-size: 15px; margin-bottom: 6px; padding-right: 24px; }
+    .close { position: absolute; top: 8px; right: 8px; border: 0; background: none; padding: 0 4px;
+      color: #cfe3f3; font: 20px/1 Arial, sans-serif; cursor: pointer; }
+    .close:hover { color: #fff; }
     .profile + .profile { margin-top: 8px; }
-    .name { font-weight: 600; }
-    ul { margin: 2px 0 0; padding-left: 16px; }
+    .name { font-weight: 700; color: #ffb612; }
+    ul { margin: 2px 0 0; padding-left: 18px; }
     li { word-break: break-all; }
-    code { font: 12px ui-monospace, monospace; color: #e2e8f0; }
-    .removed { color: #fca5a5; }`;
+    code { font: 12.5px ui-monospace, Consolas, monospace; color: #e6f0f8; }
+    .removed { color: #ffb4ab; }`;
 
   function el(tag, props = {}, ...children) {
     const e = Object.assign(document.createElement(tag), props);

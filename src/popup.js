@@ -4,7 +4,7 @@ const list = document.getElementById("list");
 const profiles = await getProfiles();
 
 if (profiles.length === 0) {
-  list.innerHTML = '<p class="muted">Nog geen profielen.</p>';
+  list.innerHTML = '<p class="muted empty">Nog geen profielen.</p>';
 }
 
 for (const profile of profiles) {

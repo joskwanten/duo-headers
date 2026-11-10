@@ -130,3 +130,5 @@ Let op: heb je instellingen (zoals zichtbaarheid) handmatig in de developer cons
 ## Schermafbeeldingen bijwerken
 
 Na UI-wijzigingen: `node scripts/store-screenshots.js` (vereist Node + Playwright met Chromium).
+Store-icoon, schermafbeeldingen en promotegel worden **niet** via de API meegestuurd: upload ze na een wijziging
+opnieuw onder *Store listing* (en daarna *Submit for review*).

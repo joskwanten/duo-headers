@@ -6,27 +6,48 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Profielen</h1>
-  <p class="muted">Domeinen: één per regel. Subdomeinen worden automatisch meegenomen
-    (<code>example.com</code> matcht ook <code>api.example.com</code>).
-    Bovenste profiel wint bij conflicterende headers.</p>
-  <p><button id="collapse-all">Alles inklappen</button>
-    <button id="expand-all">Alles uitklappen</button></p>
-  <div id="profiles"></div>
-  <button id="add">+ Profiel toevoegen</button>
-  <button id="export">Exporteren</button>
-  <button id="import">Importeren</button>
-  <input type="file" id="import-file" accept="application/json" hidden>
+  <header class="appbar">
+    <img src="icons/icon-128.png" alt="">
+    <div>
+      <h1>Duo Headers</h1>
+      <p>Profielen beheren</p>
+    </div>
+  </header>
+
+  <main>
+    <p class="muted intro">Domeinen: één per regel. Subdomeinen worden automatisch meegenomen
+      (<code>example.com</code> matcht ook <code>api.example.com</code>).
+      Bovenste profiel wint bij conflicterende headers.</p>
+
+    <div class="toolbar">
+      <button id="add" class="primary">+ Profiel toevoegen</button>
+      <button id="import-add" title="Profiel(en) uit een bestand toevoegen aan de lijst">Profiel importeren</button>
+      <span class="spacer"></span>
+      <button id="collapse-all">Alles inklappen</button>
+      <button id="expand-all">Alles uitklappen</button>
+    </div>
+
+    <p id="notice" class="notice" role="status" hidden></p>
+
+    <div id="profiles"></div>
+
+    <div class="toolbar">
+      <button id="export-all" title="Alle profielen naar één bestand">Alles exporteren</button>
+      <button id="import-replace" title="Alle huidige profielen vervangen door die uit een bestand">Alles importeren (vervangen)</button>
+    </div>
+    <input type="file" id="import-file" accept="application/json,.json" hidden>
+  </main>
 
   <template id="profile-tpl">
     <section class="profile">
       <header>
-        <button class="toggle" title="In-/uitklappen">▾</button>
+        <button class="toggle icon" title="In-/uitklappen">▾</button>
         <input type="checkbox" class="enabled" title="Actief">
         <input type="text" class="name" placeholder="Profielnaam">
-        <button class="up" title="Omhoog">↑</button>
-        <button class="down" title="Omlaag">↓</button>
-        <button class="delete">Verwijderen</button>
+        <button class="up icon" title="Omhoog">↑</button>
+        <button class="down icon" title="Omlaag">↓</button>
+        <button class="export" title="Dit profiel exporteren naar een bestand">Exporteren</button>
+        <button class="delete danger">Verwijderen</button>
       </header>
       <div class="summary muted"></div>
       <div class="body">
@@ -73,7 +94,7 @@
       </select>
       <input type="text" class="h-name" placeholder="Header-naam">
       <input type="text" class="h-value" placeholder="Waarde">
-      <button class="h-delete" title="Verwijderen">×</button>
+      <button class="h-delete icon" title="Header verwijderen">×</button>
     </div>
   </template>
 

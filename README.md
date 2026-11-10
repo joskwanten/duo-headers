@@ -28,7 +28,12 @@ Iconen opnieuw genereren: `python3 scripts/make-icons.py`.
 
 - **Popup** (klik op het extensie-icoon): profielen snel aan/uit zetten. De badge toont het aantal actieve profielen.
 - **Opties-pagina** ("Profielen beheren"): profielen aanmaken, hernoemen, domeinen en headers instellen,
-  volgorde wijzigen, in-/uitklappen (status blijft bewaard), en importeren/exporteren als JSON (handig om profielen met het team te delen).
+  volgorde wijzigen en in-/uitklappen (status blijft bewaard).
+- **Exporteren/importeren** (JSON, handig om profielen met het team te delen):
+  - *Exporteren* bij een profiel: alleen dat profiel naar een bestand.
+  - *Profiel importeren*: profielen uit een bestand **toevoegen** aan de lijst (bestaat de naam al, dan komt er `(2)` achter).
+  - *Alles exporteren* / *Alles importeren (vervangen)*: alle profielen in één bestand; vervangen vraagt eerst om bevestiging.
+  - Alle exportbestanden hebben hetzelfde formaat (een lijst met profielen) en werken met beide import-knoppen.
 
 - **Toast**: zodra een profiel op een request wordt toegepast, verschijnt rechtsonder op de pagina een toast
   met de toegepaste profielen en hun headers. Dat geldt ook voor API-calls van de pagina naar een ander domein:
@@ -56,6 +61,13 @@ Per profiel kun je een token service instellen (vinkje **Token service** op de b
 Domeinen worden gematcht via `requestDomains`: `example.com` matcht ook alle subdomeinen.
 `*.example.com`, `https://` en paden worden automatisch weggestript.
 Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
+
+## Huisstijl
+
+De opmaak volgt duo.nl (Rijkshuisstijl): kleuren `#2b2b2b` op `#f3f3f3`, lintblauw `#01689b`, hemelblauw `#007bc7`,
+donkerblauw `#154273`, grijze knoppen en groene primaire knop, rechte hoeken. Licht/donker volgt de instelling van het
+systeem/Chrome. Het font RijksoverheidSans wordt **niet** meegeleverd (licentie); staat het op de computer geïnstalleerd,
+dan wordt het gebruikt, anders Helvetica/Arial (zoals op duo.nl). Alle kleuren staan als variabelen bovenin `src/styles.css`.
 
 ## Hoe het werkt
 

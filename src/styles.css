@@ -1,35 +1,195 @@
-:root { color-scheme: light dark; font-family: system-ui, sans-serif; font-size: 14px; }
-body { margin: 0; padding: 16px; }
-h1 { font-size: 18px; margin: 0 0 12px; }
-button { cursor: pointer; padding: 4px 10px; }
-input[type="text"], textarea, select { font: inherit; padding: 4px 6px; box-sizing: border-box; }
-.profile { border: 1px solid #8884; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-.profile header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-.profile header .name { flex: 1; font-weight: 600; }
-.profile label.block { display: block; margin: 8px 0 4px; font-weight: 600; }
-.profile textarea { width: 100%; min-height: 60px; }
-.header-row { display: flex; gap: 6px; margin-bottom: 4px; }
+/* Huisstijl afgeleid van duo.nl (Rijkshuisstijl): RijksoverheidSans, #2b2b2b op #f3f3f3,
+   witte vlakken, rechte hoeken, grijze knoppen met donkere onderrand en groene primaire knop.
+   Het font zelf wordt niet meegeleverd (licentie); waar het geïnstalleerd is wordt het gebruikt. */
+
+:root {
+  color-scheme: light dark;
+  --font: "RijksoverheidSans", "RijksoverheidSansText", "RO Sans", "RijksoverheidSansWebText", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --bg: #f3f3f3;
+  --surface: #ffffff;
+  --text: #2b2b2b;
+  --muted: #696969;
+  --border: #dbdbdb;
+  --input-bg: #ffffff;
+  --input-border: #8c8c8c;
+  --link: #005ea5;
+
+  --brand: #01689b;        /* lintblauw */
+  --brand-light: #007bc7;  /* hemelblauw */
+  --brand-dark: #154273;   /* donkerblauw */
+  --appbar-from: #01689b;
+  --appbar-to: #007bc7;
+
+  --btn: #cccccc;
+  --btn-hover: #dbdbdb;
+  --btn-active: #999999;
+  --btn-text: #2b2b2b;
+  --btn-edge: rgba(43, 43, 43, .25);
+  --primary: #3c861b;
+  --primary-hover: #42941e;
+  --primary-active: #2a5d11;
+
+  --danger: #d52b1e;
+  --ok: #39870c;
+  --focus: #007bc7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --surface: #212429;
+    --text: #e9e9e9;
+    --muted: #a6a6a6;
+    --border: #3a3f46;
+    --input-bg: #181b1f;
+    --input-border: #5b616a;
+    --link: #7cc4ff;
+
+    --brand: #4fa3d1;
+    --appbar-from: #154273;
+    --appbar-to: #01689b;
+
+    --btn: #3a3f46;
+    --btn-hover: #4a5059;
+    --btn-active: #2a2e33;
+    --btn-text: #f0f0f0;
+    --btn-edge: rgba(0, 0, 0, .5);
+
+    --danger: #ff7a6e;
+    --ok: #7fcf5a;
+    --focus: #5fb4ef;
+  }
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 var(--font);
+  accent-color: var(--brand);
+}
+a { color: var(--link); }
+code { font-family: var(--mono); font-size: .9em; }
+h1, h2 { margin: 0; font-weight: 700; }
+.muted { color: var(--muted); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* --- Knoppen (duo.nl .btn) --- */
+button {
+  font: inherit;
+  color: var(--btn-text);
+  background: var(--btn);
+  border: 0;
+  border-bottom: 3px solid var(--btn-edge);
+  border-radius: 0;
+  padding: 6px 14px;
+  min-height: 36px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+button:hover { background: var(--btn-hover); }
+button:active { background: var(--btn-active); }
+button:disabled { opacity: .6; cursor: default; }
+button.primary { background: var(--primary); color: #fff; }
+button.primary:hover { background: var(--primary-hover); }
+button.primary:active { background: var(--primary-active); }
+button.danger { color: var(--danger); }
+button.icon { min-width: 36px; padding: 6px 8px; }
+
+/* --- Invoervelden --- */
+input[type="text"], textarea, select {
+  font: inherit;
+  color: var(--text);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 0;
+  padding: 6px 8px;
+  min-height: 36px;
+}
+textarea { resize: vertical; }
+input[type="checkbox"] { width: 18px; height: 18px; margin: 0; }
+
+/* --- App-balk --- */
+.appbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--appbar-from), var(--appbar-to));
+}
+.appbar img { width: 40px; height: 40px; }
+.appbar h1 { font-size: 26px; line-height: 1.1; }
+.appbar p { margin: 2px 0 0; opacity: .9; }
+
+/* --- Beheerpagina --- */
+main { max-width: 1040px; margin: 0 auto; padding: 20px 24px 40px; }
+.intro { margin: 0 0 16px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; align-items: center; }
+.toolbar .spacer { flex: 1; }
+
+.notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-left: 5px solid var(--ok);
+}
+.notice--error { border-left-color: var(--danger); }
+
+.profile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--border);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.profile.is-enabled { border-left-color: var(--brand); }
+.profile header { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.profile header .name { flex: 1; font-weight: 700; font-size: 16px; }
+.profile label.block { display: block; margin: 12px 0 4px; font-weight: 700; }
+.profile textarea.domains { width: 100%; min-height: 64px; }
+.profile .add-header { margin-top: 4px; }
+
+.header-row { display: flex; gap: 6px; margin-bottom: 6px; }
 .header-row .h-name { flex: 1; }
 .header-row .h-value { flex: 2; }
-.muted { opacity: .7; }
-.popup { width: 260px; }
-.popup .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #8883; }
-.popup .row span { flex: 1; }
-.profile .toggle { width: 28px; padding: 4px 0; }
-.profile .summary { display: none; margin-left: 36px; }
+
+.profile .toggle { width: 36px; padding: 6px 0; }
+.profile .summary { display: none; margin-left: 44px; }
 .profile.collapsed .summary { display: block; }
 .profile.collapsed .body { display: none; }
 .profile.collapsed header { margin-bottom: 4px; }
-.ts-toggle { display: flex !important; align-items: center; gap: 6px; margin-top: 14px !important; }
-.ts-fields { border-left: 3px solid #2563eb55; padding-left: 10px; }
+
+/* Token service */
+.ts-toggle { display: flex !important; align-items: center; gap: 8px; margin-top: 16px !important; }
+.ts-fields { border-left: 3px solid var(--brand); padding-left: 12px; }
 .profile:not(.ts-on) .ts-fields { display: none; }
-.ts-grid { display: grid; grid-template-columns: 90px 1fr; gap: 6px 8px; align-items: center; }
+.ts-grid { display: grid; grid-template-columns: 100px 1fr; gap: 6px 10px; align-items: center; }
 .ts-row { display: flex; gap: 6px; }
 .ts-row .ts-url, .ts-row .ts-template { flex: 1; }
-.ts-row .ts-header { width: 160px; }
-.ts-grid textarea { min-height: 40px; }
-.ts-hint { margin: 6px 0; }
+.ts-row .ts-header { width: 170px; }
+.ts-grid textarea { min-height: 44px; }
+.ts-hint { margin: 8px 0; }
 .ts-status-row { display: flex; gap: 8px; align-items: center; }
 .ts-status { flex: 1; }
-.ts-status.error { color: #dc2626; opacity: 1; }
-.ts-status.ok { color: #16a34a; opacity: 1; }
+.ts-status.error { color: var(--danger); }
+.ts-status.ok { color: var(--ok); }
+
+/* --- Popup --- */
+body.popup { width: 300px; }
+.popup .appbar { padding: 12px 14px; gap: 10px; }
+.popup .appbar img { width: 28px; height: 28px; }
+.popup .appbar h1 { font-size: 18px; }
+.popup #list { background: var(--surface); }
+.popup .row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.popup .row span { flex: 1; }
+.popup .empty { padding: 12px 14px; margin: 0; }
+.popup .actions { padding: 12px 14px; margin: 0; }
+.popup .actions button { width: 100%; }
+
+/* Icoon zichtbaar houden op de blauwe balk */
+.appbar img { border-radius: 22%; box-shadow: 0 0 0 2px rgba(255, 255, 255, .85); }

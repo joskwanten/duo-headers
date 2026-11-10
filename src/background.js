@@ -53,7 +53,7 @@ async function syncRules() {
 
   const active = profiles.filter((p) => p.enabled).length;
   await chrome.action.setBadgeText({ text: active ? String(active) : "" });
-  await chrome.action.setBadgeBackgroundColor({ color: "#2563eb" });
+  await chrome.action.setBadgeBackgroundColor({ color: "#01689b" });
 }
 
 chrome.runtime.onInstalled.addListener(syncRules);

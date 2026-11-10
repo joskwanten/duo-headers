@@ -33,7 +33,6 @@ const app = http.createServer((q, r) => r.end(`<html><body style="margin:0;font-
 
   const page = await ctx.newPage();
   await page.goto(`chrome-extension://${id}/options.html`);
-  await page.addStyleTag({ content: 'body{max-width:1100px;margin:0 auto}' });
   await page.waitForTimeout(500);
   await page.screenshot({ path: `${OUT}/screenshot-1-profielen.png` });
 
@@ -49,7 +48,7 @@ const app = http.createServer((q, r) => r.end(`<html><body style="margin:0;font-
   await pop.addStyleTag({ content: 'html{zoom:1.4} .popup{width:100%;box-sizing:border-box}' }); await pop.waitForTimeout(300);
   const popPng = (await pop.screenshot({ fullPage: true })).toString('base64');
   const canvas = await ctx.newPage();
-  await canvas.setContent(`<body style="margin:0;width:1280px;height:800px;display:flex;align-items:center;justify-content:center;gap:64px;background:linear-gradient(135deg,#1e3a8a,#2563eb);font-family:system-ui;color:#fff">
+  await canvas.setContent(`<body style="margin:0;width:1280px;height:800px;display:flex;align-items:center;justify-content:center;gap:64px;background:linear-gradient(135deg,#154273,#01689b);font-family:system-ui;color:#fff">
     <div style="max-width:440px"><img src="data:image/png;base64,${require('fs').readFileSync(ext + '/icons/icon-128.png').toString('base64')}" style="width:96px"><h1 style="font-size:44px;margin:16px 0 8px">Duo Headers</h1>
     <p style="font-size:22px;line-height:1.4;opacity:.9">Profielen met headers per domein. Met één klik aan of uit.</p></div>
     <img src="data:image/png;base64,${popPng}" style="border-radius:12px;box-shadow:0 20px 50px #0008"></body>`);
@@ -59,7 +58,7 @@ const app = http.createServer((q, r) => r.end(`<html><body style="margin:0;font-
   // Kleine promotegel 440x280
   const tile = await ctx.newPage();
   await tile.setViewportSize({ width: 440, height: 280 });
-  await tile.setContent(`<body style="margin:0;width:440px;height:280px;display:flex;align-items:center;gap:22px;padding:0 34px;box-sizing:border-box;background:linear-gradient(135deg,#1e3a8a,#2563eb);font-family:system-ui;color:#fff">
+  await tile.setContent(`<body style="margin:0;width:440px;height:280px;display:flex;align-items:center;gap:22px;padding:0 34px;box-sizing:border-box;background:linear-gradient(135deg,#154273,#01689b);font-family:system-ui;color:#fff">
     <img src="data:image/png;base64,${require('fs').readFileSync(ext + '/icons/icon-128.png').toString('base64')}" style="width:104px;flex:none;filter:drop-shadow(0 6px 14px #0006)">
     <div><div style="font-size:34px;font-weight:700;line-height:1.1">Duo Headers</div>
     <div style="font-size:17px;opacity:.9;margin-top:8px;line-height:1.35">Headers en tokens per profiel, per domein</div></div></body>`);
