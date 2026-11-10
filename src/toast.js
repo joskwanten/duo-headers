@@ -15,8 +15,9 @@
       transition: opacity .2s, transform .2s; }
     .toast.hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
     .title { font-weight: 700; font-size: 15px; margin-bottom: 6px; padding-right: 24px; }
-    .close { position: absolute; top: 8px; right: 8px; border: 0; background: none; padding: 0 4px;
-      color: #cfe3f3; font: 20px/1 Arial, sans-serif; cursor: pointer; }
+    .close { position: absolute; top: 8px; right: 8px; border: 0; background: none; padding: 2px;
+      color: #cfe3f3; cursor: pointer; line-height: 0; }
+    .close svg { width: 16px; height: 16px; }
     .close:hover { color: #fff; }
     .profile + .profile { margin-top: 8px; }
     .name { font-weight: 700; color: #ffb612; }
@@ -29,6 +30,21 @@
     const e = Object.assign(document.createElement(tag), props);
     e.append(...children);
     return e;
+  }
+
+  // Dik kruisje als SVG (los van het font van de pagina).
+  function closeButton() {
+    const btn = el("button", { className: "close", title: "Sluiten", onclick: hide });
+    btn.setAttribute("aria-label", "Sluiten");
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    const path = document.createElementNS(ns, "path");
+    path.setAttribute("d", "M6 6l12 12M18 6L6 18");
+    for (const [k, v] of Object.entries({ fill: "none", stroke: "currentColor", "stroke-width": "3.2", "stroke-linecap": "round" })) path.setAttribute(k, v);
+    svg.append(path);
+    btn.append(svg);
+    return btn;
   }
 
   function truncate(v) {
@@ -45,7 +61,7 @@
     root.querySelector(".toast")?.remove();
 
     const toast = el("div", { className: "toast hidden" },
-      el("button", { className: "close", textContent: "×", title: "Sluiten", onclick: hide }),
+      closeButton(),
       el("div", { className: "title", textContent: "Duo Headers toegepast" }),
       ...profiles.map((p) =>
         el("div", { className: "profile" },

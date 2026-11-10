@@ -110,7 +110,7 @@ function renderProfile(profile, index) {
   const applyCollapsed = () => {
     const isCollapsed = collapsed.has(profile.id);
     el.classList.toggle("collapsed", isCollapsed);
-    toggle.textContent = isCollapsed ? "▸" : "▾";
+    toggle.setAttribute("aria-expanded", String(!isCollapsed)); // pijltje draait via CSS
     summary.textContent = summarize(profile);
   };
   applyCollapsed();

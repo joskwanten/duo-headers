@@ -117,7 +117,11 @@ button.primary { background: var(--primary); color: #fff; }
 button.primary:hover { background: var(--primary-hover); }
 button.primary:active { background: var(--primary-active); }
 button.danger { color: var(--danger); }
-button.icon { min-width: 36px; padding: 6px 8px; }
+button.icon { min-width: 36px; padding: 6px 8px; display: inline-flex; align-items: center; justify-content: center; }
+.ico { width: 18px; height: 18px; flex: none; display: block; }
+button.with-ico { display: inline-flex; align-items: center; gap: 6px; }
+button.with-ico .ico { width: 16px; height: 16px; }
+.profile.collapsed .toggle .ico { transform: rotate(-90deg); }
 
 /* --- Invoervelden --- */
 input[type="text"], textarea, select {
