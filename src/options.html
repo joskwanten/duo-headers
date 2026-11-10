@@ -17,6 +17,7 @@
   <main>
     <p class="muted intro">Domeinen: één per regel. Subdomeinen worden automatisch meegenomen
       (<code>example.com</code> matcht ook <code>api.example.com</code>).
+      Zonder poort geldt een domein voor alle poorten; met poort (<code>localhost:4200</code>) alleen voor die poort.
       Bovenste profiel wint bij conflicterende headers.</p>
 
     <div class="toolbar">
@@ -52,7 +53,7 @@
       <div class="summary muted"></div>
       <div class="body">
       <label class="block">Domeinen</label>
-      <textarea class="domains" placeholder="example.com&#10;test.local"></textarea>
+      <textarea class="domains" placeholder="example.com&#10;localhost:4200"></textarea>
       <label class="block">Headers</label>
       <div class="headers"></div>
       <button class="add-header">+ Header</button>

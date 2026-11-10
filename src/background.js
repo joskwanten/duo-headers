@@ -1,7 +1,7 @@
 // Service worker: vertaalt profielen naar declarativeNetRequest-regels.
 // Bij elke wijziging in storage worden alle dynamische regels opnieuw opgebouwd.
 
-import { getProfiles, getTokens, profileDomains, effectiveHeaders } from "./storage.js";
+import { getProfiles, getTokens, profileDomains, parseDomain, effectiveHeaders } from "./storage.js";
 import { initToasts } from "./toasts.js";
 import { initTokens } from "./tokens.js";
 
@@ -26,13 +26,23 @@ function buildRules(profiles, tokens) {
 
     if (domains.length === 0 || requestHeaders.length === 0) return;
 
-    rules.push({
-      id: id++,
+    const base = {
       // Profielen bovenaan de lijst winnen bij conflicterende headers.
       priority: profiles.length - index,
       action: { type: "modifyHeaders", requestHeaders },
-      condition: { requestDomains: domains, resourceTypes: ALL_RESOURCE_TYPES },
-    });
+    };
+
+    // Domeinen zonder poort: één regel met requestDomains (matcht elke poort en subdomeinen).
+    const anyPort = domains.filter((d) => !parseDomain(d).port);
+    if (anyPort.length) {
+      rules.push({ ...base, id: id++, condition: { requestDomains: anyPort, resourceTypes: ALL_RESOURCE_TYPES } });
+    }
+
+    // Domeinen met poort: requestDomains kent geen poorten, dus per domein een urlFilter.
+    // "||" = begin van (sub)domein; de "/" erachter voorkomt dat :4200 ook :42001 matcht.
+    for (const d of domains.filter((d) => parseDomain(d).port)) {
+      rules.push({ ...base, id: id++, condition: { urlFilter: `||${d}/`, resourceTypes: ALL_RESOURCE_TYPES } });
+    }
   });
   return rules;
 }

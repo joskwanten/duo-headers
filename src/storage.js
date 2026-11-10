@@ -64,23 +64,39 @@ export async function saveTokens(tokens) {
   await chrome.storage.session.set({ [TOKENS_KEY]: tokens });
 }
 
-// "*.example.com" en "https://example.com/pad" -> "example.com".
-// requestDomains (en matchesDomain hieronder) matchen subdomeinen automatisch.
+// Domein-invoer normaliseren naar "host" of "host:poort":
+//   "*.example.com", "https://example.com/pad" -> "example.com"
+//   "localhost:4200", "http://localhost:4200/app" -> "localhost:4200"
+// Zonder poort matcht een domein alle poorten; met poort alleen die poort.
+// Subdomeinen worden altijd meegenomen.
 export function normalizeDomain(input) {
   let d = input.trim().toLowerCase();
   if (!d) return null;
-  d = d.replace(/^[a-z]+:\/\//, "").replace(/^\*\./, "");
-  d = d.split("/")[0].split(":")[0];
-  return d || null;
+  d = d.replace(/^[a-z][a-z0-9+.-]*:\/\//, "").replace(/^\*\./, "");
+  d = d.split("/")[0];
+  const m = d.match(/^([^:]+)(?::(\d{1,5}))?$/);
+  if (!m) return null;
+  const [, host, port] = m;
+  return port ? `${host}:${Number(port)}` : host;
+}
+
+export function parseDomain(entry) {
+  const [host, port] = entry.split(":");
+  return { host, port: port ?? null };
 }
 
 export function profileDomains(profile) {
   return [...new Set(profile.domains.map(normalizeDomain).filter(Boolean))];
 }
 
-// Zelfde semantiek als declarativeNetRequest requestDomains.
-export function matchesDomain(hostname, domains) {
-  return domains.some((d) => hostname === d || hostname.endsWith("." + d));
+// Zelfde semantiek als de declarativeNetRequest-regels in background.js.
+// `port` is de expliciete poort uit de URL ("" bij de standaardpoort, zoals URL.port).
+export function matchesDomain(hostname, port, domains) {
+  return domains.some((entry) => {
+    const d = parseDomain(entry);
+    const hostOk = hostname === d.host || hostname.endsWith("." + d.host);
+    return hostOk && (d.port === null || d.port === port);
+  });
 }
 
 export function activeHeaders(profile) {

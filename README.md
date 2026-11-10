@@ -58,8 +58,10 @@ Per profiel kun je een token service instellen (vinkje **Token service** op de b
 - Tokens worden alleen in het geheugen bewaard (`chrome.storage.session`) en zijn weg na het sluiten van de browser.
 - Met **Nu ophalen** haal je direct een nieuw token op.
 
-Domeinen worden gematcht via `requestDomains`: `example.com` matcht ook alle subdomeinen.
-`*.example.com`, `https://` en paden worden automatisch weggestript.
+Domeinen matchen ook alle subdomeinen (`example.com` geldt ook voor `api.example.com`).
+Zonder poort geldt een domein voor alle poorten; met poort (`localhost:4200`) alleen voor die poort.
+`*.`, `https://` en paden worden automatisch weggestript (`http://localhost:4200/app` wordt `localhost:4200`).
+Een standaardpoort (`:80`, `:443`) opgeven werkt niet: browsers laten die weg uit de URL. Gebruik dan het domein zonder poort.
 Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
 
 ## Huisstijl

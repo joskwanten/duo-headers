@@ -32,13 +32,13 @@ async function onRequest(details) {
     tabs.set(details.tabId, state);
   }
 
-  let hostname;
-  try { hostname = new URL(details.url).hostname; } catch { return; }
+  let hostname, port;
+  try { ({ hostname, port } = new URL(details.url)); } catch { return; }
 
   const profiles = await profilesPromise;
   let added = false;
   for (const p of profiles) {
-    if (!state.matched.has(p.id) && matchesDomain(hostname, p.normDomains)) {
+    if (!state.matched.has(p.id) && matchesDomain(hostname, port, p.normDomains)) {
       state.matched.add(p.id);
       added = true;
     }
