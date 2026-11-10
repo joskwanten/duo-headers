@@ -1,10 +1,29 @@
+/* Source Sans 3 (SIL OFL, zie fonts/OFL-source-sans-3.txt) als vervanger van RijksoverheidSans,
+   dat niet meegeleverd mag worden. Iets zwaardere gewichten (500/600) zodat de dikte overeenkomt
+   met RijksoverheidSans regular/bold. */
+@font-face {
+  font-family: "Duo Headers Sans";
+  src: url("fonts/source-sans-3-latin-500-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Duo Headers Sans";
+  src: url("fonts/source-sans-3-latin-600-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Huisstijl afgeleid van duo.nl (Rijkshuisstijl): RijksoverheidSans, #2b2b2b op #f3f3f3,
    witte vlakken, rechte hoeken, grijze knoppen met donkere onderrand en groene primaire knop.
-   Het font zelf wordt niet meegeleverd (licentie); waar het geïnstalleerd is wordt het gebruikt. */
+   RijksoverheidSans wordt niet meegeleverd (licentie); waar het geïnstalleerd is wordt het gebruikt,
+   anders Source Sans 3 (hierboven). */
 
 :root {
   color-scheme: light dark;
-  --font: "RijksoverheidSans", "RijksoverheidSansText", "RO Sans", "RijksoverheidSansWebText", Helvetica, Arial, sans-serif;
+  --font: "RijksoverheidSans", "RijksoverheidSansText", "RO Sans", "RijksoverheidSansWebText", "Duo Headers Sans", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
 
   --bg: #f3f3f3;
@@ -69,7 +88,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.5 var(--font);
+  font: 16px/1.5 var(--font);
   accent-color: var(--brand);
 }
 a { color: var(--link); }
@@ -149,7 +168,7 @@ main { max-width: 1040px; margin: 0 auto; padding: 20px 24px 40px; }
 }
 .profile.is-enabled { border-left-color: var(--brand); }
 .profile header { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-.profile header .name { flex: 1; font-weight: 700; font-size: 16px; }
+.profile header .name { flex: 1; font-weight: 700; font-size: 17px; }
 .profile label.block { display: block; margin: 12px 0 4px; font-weight: 700; }
 .profile textarea.domains { width: 100%; min-height: 64px; }
 .profile .add-header { margin-top: 4px; }

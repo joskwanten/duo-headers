@@ -69,7 +69,8 @@ Bij conflicterende headers wint het profiel dat hoger in de lijst staat.
 De opmaak volgt duo.nl (Rijkshuisstijl): kleuren `#2b2b2b` op `#f3f3f3`, lintblauw `#01689b`, hemelblauw `#007bc7`,
 donkerblauw `#154273`, grijze knoppen en groene primaire knop, rechte hoeken. Licht/donker volgt de instelling van het
 systeem/Chrome. Het font RijksoverheidSans wordt **niet** meegeleverd (licentie); staat het op de computer geïnstalleerd,
-dan wordt het gebruikt, anders Helvetica/Arial (zoals op duo.nl). Alle kleuren staan als variabelen bovenin `src/styles.css`.
+dan wordt het gebruikt. Anders wordt het meegeleverde Source Sans 3 gebruikt (SIL Open Font License,
+`src/fonts/`), in iets zwaardere gewichten zodat het qua dikte en breedte op RijksoverheidSans lijkt. Alle kleuren staan als variabelen bovenin `src/styles.css`.
 
 ## Hoe het werkt
 
